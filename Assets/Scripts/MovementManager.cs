@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class MovementManager : MonoBehaviour
@@ -9,7 +8,7 @@ public class MovementManager : MonoBehaviour
     CharacterController ctrl;
     Vector3 playerVelocity = Vector3.zero;
 
-    bool justGrounded = false;
+    bool canJump = true;
 
     void Start()
     {
@@ -18,19 +17,14 @@ public class MovementManager : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (ctrl.isGrounded && !justGrounded) {
-            Debug.Log("Grounded!");
-            justGrounded = true;
+        if (ctrl.isGrounded && !canJump) {
+            playerVelocity.y = 0;
+            canJump = true;
         }
 
-        if(ctrl.isGrounded && playerVelocity.y < 0)
-        {
-            playerVelocity.y = 0f;
-        }
-
-        if (ctrl.isGrounded && Input.GetButtonDown("Jump")) {
+        if (canJump && Input.GetButton("Jump")) {
             playerVelocity.y = jumpForce;
-            justGrounded = false;
+            canJump = false;
         }
 
         var vert = Input.GetAxis("Vertical");
@@ -42,7 +36,8 @@ public class MovementManager : MonoBehaviour
 
         if (!ctrl.isGrounded) {
             playerVelocity.y += playerGravity * Time.fixedDeltaTime;
-            ctrl.Move(playerVelocity);
         }
+
+        ctrl.Move(playerVelocity);
     }
 }
