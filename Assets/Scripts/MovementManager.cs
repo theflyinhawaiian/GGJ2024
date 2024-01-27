@@ -1,21 +1,48 @@
+using System;
 using UnityEngine;
 
 public class MovementManager : MonoBehaviour
 {
-    Rigidbody body;
+    public float jumpForce;
+    public float playerGravity;
+
+    CharacterController ctrl;
+    Vector3 playerVelocity = Vector3.zero;
+
+    bool justGrounded = false;
 
     void Start()
     {
-        body = GetComponent<Rigidbody>();
+        ctrl = GetComponent<CharacterController>();
     }
 
-    void Update()
+    void FixedUpdate()
     {
+        if (ctrl.isGrounded && !justGrounded) {
+            Debug.Log("Grounded!");
+            justGrounded = true;
+        }
+
+        if(ctrl.isGrounded && playerVelocity.y < 0)
+        {
+            playerVelocity.y = 0f;
+        }
+
+        if (ctrl.isGrounded && Input.GetButtonDown("Jump")) {
+            playerVelocity.y = jumpForce;
+            justGrounded = false;
+        }
+
         var vert = Input.GetAxis("Vertical");
         var hor = Input.GetAxis("Horizontal");
 
-        var newPos = body.transform.position + new Vector3(-hor, 0 , -vert);
+        var move = new Vector3(-hor, 0 , -vert);
 
-        body.MovePosition(newPos);
+        ctrl.Move(move);
+
+        if (!ctrl.isGrounded) {
+            playerVelocity.y += playerGravity * Time.fixedDeltaTime;
+            ctrl.Move(playerVelocity);
+        }
     }
 }
