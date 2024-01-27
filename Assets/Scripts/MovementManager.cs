@@ -4,6 +4,7 @@ public class MovementManager : MonoBehaviour
 {
     public float jumpForce;
     public float playerGravity;
+    public float movementSpeed = 5.0f;
 
     CharacterController ctrl;
     Vector3 playerVelocity = Vector3.zero;
@@ -30,7 +31,7 @@ public class MovementManager : MonoBehaviour
         var vert = Input.GetAxis("Vertical");
         var hor = Input.GetAxis("Horizontal");
 
-        var move = new Vector3(-hor, 0 , -vert);
+        var move = new Vector3(-hor, 0 , -vert) * movementSpeed;
 
         ctrl.Move(move);
 
@@ -38,6 +39,7 @@ public class MovementManager : MonoBehaviour
             playerVelocity.y += playerGravity * Time.fixedDeltaTime;
         }
 
+        
         ctrl.Move(playerVelocity);
     }
 }
