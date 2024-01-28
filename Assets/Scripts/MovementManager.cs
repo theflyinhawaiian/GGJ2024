@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using static UnityEditor.FilePathAttribute;
 
 public class MovementManager : MonoBehaviour
 {
@@ -84,5 +85,18 @@ public class MovementManager : MonoBehaviour
         }
 
         ctrl.Move(playerVelocity * Time.fixedDeltaTime);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag != "Respawn")
+            return;
+
+        // character controller is a tyrant with no respect for us, so we need to kill it for a sec to transport our player back to spawn
+        ctrl.enabled = false;
+        gameObject.transform.position = new Vector3(-1, 4, 1);
+        ctrl.enabled = true;
+
+        playerVelocity.y = 0;
     }
 }
