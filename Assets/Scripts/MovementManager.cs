@@ -6,7 +6,8 @@ public class MovementManager : MonoBehaviour
     public float jumpForce;
     public float playerGravity;
     public float movementSpeed = 5.0f;
-    public float sprintSpeed = 10.0f; // Sprint speed
+    public float sprintSpeed = 10.0f; 
+    public float maxStepHeight;
     public Transform playerCamera;
 
     private CharacterController ctrl;
@@ -21,22 +22,23 @@ public class MovementManager : MonoBehaviour
     public event JumpHandler JumpEvent;
 
     private bool jumpRequested = false;
-    private float jumpCooldown = 0.2f; // 200ms cooldown
+    private float jumpCooldown = 0.2f; 
     private float lastJumpTime = -1f;
 
     void Start()
     {
         ctrl = GetComponent<CharacterController>();
+        //Enables the stepup mechanic but does not seem to actually change the value upon setting the float 
+        ctrl.stepOffset = maxStepHeight;
     }
 
-    void Update() // Capture input in Update
+    void Update() 
     {
         if (Input.GetButton("Jump") && Time.time > lastJumpTime + jumpCooldown)
         {
             jumpRequested = true;
         }
 
-        // Handle sprint input
         IsSprinting = Input.GetKey(KeyCode.LeftShift);
     }
 
@@ -52,8 +54,8 @@ public class MovementManager : MonoBehaviour
         {
             playerVelocity.y = jumpForce;
             canJump = false;
-            jumpRequested = false; // Reset the jump request
-            lastJumpTime = Time.time; // Update the last jump time
+            jumpRequested = false; 
+            lastJumpTime = Time.time; 
             JumpEvent?.Invoke(this, new EventArgs());
         }
 
