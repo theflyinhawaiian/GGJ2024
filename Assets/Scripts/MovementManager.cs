@@ -5,11 +5,11 @@ public class MovementManager : MonoBehaviour
     public float jumpForce;
     public float playerGravity;
     public float movementSpeed = 5.0f;
+    public Transform playerCamera; 
 
-    CharacterController ctrl;
-    Vector3 playerVelocity = Vector3.zero;
-
-    bool canJump = true;
+    private CharacterController ctrl;
+    private Vector3 playerVelocity = Vector3.zero;
+    private bool canJump = true;
 
     void Start()
     {
@@ -18,28 +18,41 @@ public class MovementManager : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (ctrl.isGrounded && !canJump) {
+        if (ctrl.isGrounded && !canJump)
+        {
             playerVelocity.y = 0;
             canJump = true;
         }
 
-        if (canJump && Input.GetButton("Jump")) {
+        if (canJump && Input.GetButton("Jump"))
+        {
             playerVelocity.y = jumpForce;
             canJump = false;
         }
 
-        var vert = Input.GetAxis("Vertical");
-        var hor = Input.GetAxis("Horizontal");
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
 
-        var move = new Vector3(-hor, 0 , -vert) * movementSpeed;
+        Vector3 forward = playerCamera.forward;
+        Vector3 right = playerCamera.right;
+        forward.y = 0; 
+        right.y = 0;
+        forward.Normalize();
+        right.Normalize();
 
-        ctrl.Move(move);
+        Vector3 moveDirection = forward * z + right * x;
 
-        if (!ctrl.isGrounded) {
-            playerVelocity.y += playerGravity * Time.fixedDeltaTime;
-        }
+        if (moveDirection.magnitude > 1)
+            moveDirection.Normalize();
 
-        
-        ctrl.Move(playerVelocity);
+        ctrl.Move(movementSpeed * Time.fixedDeltaTime * moveDirection);
+
+        //if (!ctrl.isGrounded)
+        //{
+        //    playerVelocity.y += playerGravity * Time.fixedDeltaTime;
+        //}
+
+        playerVelocity.y += playerGravity * Time.fixedDeltaTime;
+        ctrl.Move(playerVelocity * Time.fixedDeltaTime);
     }
 }
