@@ -11,19 +11,19 @@ AnimatorStateMachine:
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: 3456889162471154047}
-    m_Position: {x: 270, y: 110, z: 0}
+    m_Position: {x: 70, y: -80, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -285785039645929593}
-    m_Position: {x: 530, y: 110, z: 0}
+    m_Position: {x: 70, y: 0, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
   m_StateMachineTransitions: {}
   m_StateMachineBehaviours:
   - {fileID: 4140512929518640124}
-  m_AnyStatePosition: {x: 130, y: -10, z: 0}
-  m_EntryPosition: {x: 50, y: 110, z: 0}
-  m_ExitPosition: {x: 130, y: 30, z: 0}
+  m_AnyStatePosition: {x: 90, y: -210, z: 0}
+  m_EntryPosition: {x: 90, y: -130, z: 0}
+  m_ExitPosition: {x: 90, y: -170, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
   m_DefaultState: {fileID: 3456889162471154047}
 --- !u!1101 &-2494005462772955209
@@ -178,6 +178,7 @@ MonoBehaviour:
   walkSpeed: 5
   sprintSpeed: 10
   jumpHeight: 2
+  rotationSpeed: 5
   playerCamera: {fileID: 0}
   animator: {fileID: 0}
 --- !u!114 &4635864590051439275
