@@ -19,10 +19,22 @@ public class MovementManager : MonoBehaviour
     public delegate void JumpHandler (object sender, EventArgs e);
     public event JumpHandler JumpEvent;
 
+    private bool jumpRequested = false;
+    private float jumpCooldown = 0.2f; // 200ms cooldown
+    private float lastJumpTime = -1f;
+
 
     void Start()
     {
         ctrl = GetComponent<CharacterController>();
+    }
+
+    void Update() // Capture input in Update
+    {
+        if (Input.GetButton("Jump") && Time.time > lastJumpTime + jumpCooldown)
+        {
+            jumpRequested = true;
+        }
     }
 
     void FixedUpdate()
@@ -33,11 +45,13 @@ public class MovementManager : MonoBehaviour
             canJump = true;
         }
 
-        if (canJump && Input.GetButton("Jump"))
+        if (canJump && jumpRequested)
         {
             playerVelocity.y = jumpForce;
             canJump = false;
-            JumpEvent?.Invoke (this, new EventArgs ());
+            jumpRequested = false; // Reset the jump request
+            lastJumpTime = Time.time; // Update the last jump time
+            JumpEvent?.Invoke(this, new EventArgs());
         }
 
         float x = Input.GetAxis("Horizontal");
