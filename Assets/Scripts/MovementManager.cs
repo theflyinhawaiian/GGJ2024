@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class MovementManager : MonoBehaviour
@@ -12,20 +11,12 @@ public class MovementManager : MonoBehaviour
     private Vector3 playerVelocity = Vector3.zero;
     private bool canJump = true;
 
-    public float Horizontal { get; private set;}
-    public float Vertical { get; private set;}
-    public float Speed { get; private set;}
-    public bool IsSprinting { get; private set;}
-    public delegate void JumpHandler (object sender, EventArgs e);
-    public event JumpHandler JumpEvent;
-
-
     void Start()
     {
         ctrl = GetComponent<CharacterController>();
     }
 
-    void FixedUpdate()
+    void Update()
     {
         if (ctrl.isGrounded && !canJump)
         {
@@ -33,13 +24,15 @@ public class MovementManager : MonoBehaviour
             canJump = true;
         }
 
-        if (canJump && Input.GetButton("Jump"))
+        if (canJump && Input.GetButtonDown("Jump"))
         {
             playerVelocity.y = jumpForce;
             canJump = false;
-            JumpEvent?.Invoke (this, new EventArgs ());
         }
+    }
 
+    void FixedUpdate()
+    {
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
@@ -57,11 +50,7 @@ public class MovementManager : MonoBehaviour
 
         ctrl.Move(movementSpeed * Time.fixedDeltaTime * moveDirection);
 
-        if (!ctrl.isGrounded)
-        {
-            playerVelocity.y += playerGravity * Time.fixedDeltaTime;
-        }
-
+        playerVelocity.y += playerGravity * Time.fixedDeltaTime;
         ctrl.Move(playerVelocity * Time.fixedDeltaTime);
     }
 }
