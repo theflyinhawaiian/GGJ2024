@@ -6,23 +6,23 @@ public class MovementManager : MonoBehaviour
     public float jumpForce;
     public float playerGravity;
     public float movementSpeed = 5.0f;
+    public float sprintSpeed = 10.0f; // Sprint speed
     public Transform playerCamera;
 
     private CharacterController ctrl;
     private Vector3 playerVelocity = Vector3.zero;
     private bool canJump = true;
 
-    public float Horizontal { get; private set;}
-    public float Vertical { get; private set;}
-    public float Speed { get; private set;}
-    public bool IsSprinting { get; private set;}
-    public delegate void JumpHandler (object sender, EventArgs e);
+    public float Horizontal { get; private set; }
+    public float Vertical { get; private set; }
+    public float Speed { get; private set; }
+    public bool IsSprinting { get; private set; }
+    public delegate void JumpHandler(object sender, EventArgs e);
     public event JumpHandler JumpEvent;
 
     private bool jumpRequested = false;
     private float jumpCooldown = 0.2f; // 200ms cooldown
     private float lastJumpTime = -1f;
-
 
     void Start()
     {
@@ -35,6 +35,9 @@ public class MovementManager : MonoBehaviour
         {
             jumpRequested = true;
         }
+
+        // Handle sprint input
+        IsSprinting = Input.GetKey(KeyCode.LeftShift);
     }
 
     void FixedUpdate()
@@ -69,7 +72,9 @@ public class MovementManager : MonoBehaviour
         if (moveDirection.magnitude > 1)
             moveDirection.Normalize();
 
-        ctrl.Move(movementSpeed * Time.fixedDeltaTime * moveDirection);
+        float currentSpeed = IsSprinting ? sprintSpeed : movementSpeed; // Choose speed based on sprinting state
+
+        ctrl.Move(currentSpeed * Time.fixedDeltaTime * moveDirection);
 
         if (!ctrl.isGrounded)
         {
