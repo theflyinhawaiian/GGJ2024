@@ -1,52 +1,48 @@
+using System;
 using UnityEngine;
 
 public class MovementManager : MonoBehaviour
 {
-    [SerializeField] private float jumpForce = 10f;
-    [SerializeField] private float gravityValue = -9.81f;
-    [SerializeField] private float movementSpeed = 5.0f;
-    [SerializeField] private Transform playerCamera;
+    public float jumpForce;
+    public float playerGravity;
+    public float movementSpeed = 5.0f;
+    public Transform playerCamera;
 
-    private CharacterController controller;
-    private Vector3 playerVelocity;
-    private bool isGrounded;
+    private CharacterController ctrl;
+    private Vector3 playerVelocity = Vector3.zero;
+    private bool canJump = true;
 
-    private void Start()
+    public float Horizontal { get; private set;}
+    public float Vertical { get; private set;}
+    public float Speed { get; private set;}
+    public bool IsSprinting { get; private set;}
+    public delegate void JumpHandler (object sender, EventArgs e);
+    public event JumpHandler JumpEvent;
+
+
+    void Start()
     {
-        controller = GetComponent<CharacterController>();
+        ctrl = GetComponent<CharacterController>();
     }
 
-    private void Update()
+    void FixedUpdate()
     {
-        isGrounded = controller.isGrounded;
-        if (isGrounded)
+        if (ctrl.isGrounded && !canJump)
         {
-            playerVelocity.y = 0f;
-
-            if (Input.GetButtonDown("Jump"))
-            {
-                playerVelocity.y += jumpForce;
-            }
+            playerVelocity.y = 0;
+            canJump = true;
         }
 
-        playerVelocity.y += gravityValue * Time.deltaTime;
-        controller.Move(playerVelocity * Time.deltaTime); // Apply gravity
+        if (canJump && Input.GetButton("Jump"))
+        {
+            playerVelocity.y = jumpForce;
+            canJump = false;
+            JumpEvent?.Invoke (this, new EventArgs ());
+        }
 
-        HandleMovement();
-    }
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
 
-    private void HandleMovement()
-    {
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
-
-        Vector3 moveDirection = GetCameraRelativeDirection(horizontalInput, verticalInput);
-
-        controller.Move(moveDirection * movementSpeed * Time.deltaTime);
-    }
-
-    private Vector3 GetCameraRelativeDirection(float horizontal, float vertical)
-    {
         Vector3 forward = playerCamera.forward;
         Vector3 right = playerCamera.right;
         forward.y = 0;
@@ -54,6 +50,18 @@ public class MovementManager : MonoBehaviour
         forward.Normalize();
         right.Normalize();
 
-        return forward * vertical + right * horizontal;
+        Vector3 moveDirection = forward * z + right * x;
+
+        if (moveDirection.magnitude > 1)
+            moveDirection.Normalize();
+
+        ctrl.Move(movementSpeed * Time.fixedDeltaTime * moveDirection);
+
+        if (!ctrl.isGrounded)
+        {
+            playerVelocity.y += playerGravity * Time.fixedDeltaTime;
+        }
+
+        ctrl.Move(playerVelocity * Time.fixedDeltaTime);
     }
 }
