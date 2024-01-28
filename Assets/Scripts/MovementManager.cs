@@ -2,40 +2,51 @@ using UnityEngine;
 
 public class MovementManager : MonoBehaviour
 {
-    public float jumpForce;
-    public float playerGravity;
-    public float movementSpeed = 5.0f;
-    public Transform playerCamera;
+    [SerializeField] private float jumpForce = 10f;
+    [SerializeField] private float gravityValue = -9.81f;
+    [SerializeField] private float movementSpeed = 5.0f;
+    [SerializeField] private Transform playerCamera;
 
-    private CharacterController ctrl;
-    private Vector3 playerVelocity = Vector3.zero;
-    private bool canJump = true;
+    private CharacterController controller;
+    private Vector3 playerVelocity;
+    private bool isGrounded;
 
-    void Start()
+    private void Start()
     {
-        ctrl = GetComponent<CharacterController>();
+        controller = GetComponent<CharacterController>();
     }
 
-    void Update()
+    private void Update()
     {
-        if (ctrl.isGrounded && !canJump)
+        isGrounded = controller.isGrounded;
+        if (isGrounded)
         {
-            playerVelocity.y = 0;
-            canJump = true;
+            playerVelocity.y = 0f;
+
+            if (Input.GetButtonDown("Jump"))
+            {
+                playerVelocity.y += jumpForce;
+            }
         }
 
-        if (canJump && Input.GetButtonDown("Jump"))
-        {
-            playerVelocity.y = jumpForce;
-            canJump = false;
-        }
+        playerVelocity.y += gravityValue * Time.deltaTime;
+        controller.Move(playerVelocity * Time.deltaTime); // Apply gravity
+
+        HandleMovement();
     }
 
-    void FixedUpdate()
+    private void HandleMovement()
     {
-        float x = Input.GetAxis("Horizontal");
-        float z = Input.GetAxis("Vertical");
+        float horizontalInput = Input.GetAxis("Horizontal");
+        float verticalInput = Input.GetAxis("Vertical");
 
+        Vector3 moveDirection = GetCameraRelativeDirection(horizontalInput, verticalInput);
+
+        controller.Move(moveDirection * movementSpeed * Time.deltaTime);
+    }
+
+    private Vector3 GetCameraRelativeDirection(float horizontal, float vertical)
+    {
         Vector3 forward = playerCamera.forward;
         Vector3 right = playerCamera.right;
         forward.y = 0;
@@ -43,14 +54,6 @@ public class MovementManager : MonoBehaviour
         forward.Normalize();
         right.Normalize();
 
-        Vector3 moveDirection = forward * z + right * x;
-
-        if (moveDirection.magnitude > 1)
-            moveDirection.Normalize();
-
-        ctrl.Move(movementSpeed * Time.fixedDeltaTime * moveDirection);
-
-        playerVelocity.y += playerGravity * Time.fixedDeltaTime;
-        ctrl.Move(playerVelocity * Time.fixedDeltaTime);
+        return forward * vertical + right * horizontal;
     }
 }
