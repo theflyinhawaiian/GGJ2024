@@ -5,7 +5,7 @@ public class MovementManager : MonoBehaviour
     public float jumpForce;
     public float playerGravity;
     public float movementSpeed = 5.0f;
-    public Transform playerCamera; 
+    public Transform playerCamera;
 
     private CharacterController ctrl;
     private Vector3 playerVelocity = Vector3.zero;
@@ -16,7 +16,7 @@ public class MovementManager : MonoBehaviour
         ctrl = GetComponent<CharacterController>();
     }
 
-    void FixedUpdate()
+    void Update()
     {
         if (ctrl.isGrounded && !canJump)
         {
@@ -24,18 +24,21 @@ public class MovementManager : MonoBehaviour
             canJump = true;
         }
 
-        if (canJump && Input.GetButton("Jump"))
+        if (canJump && Input.GetButtonDown("Jump"))
         {
             playerVelocity.y = jumpForce;
             canJump = false;
         }
+    }
 
+    void FixedUpdate()
+    {
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
         Vector3 forward = playerCamera.forward;
         Vector3 right = playerCamera.right;
-        forward.y = 0; 
+        forward.y = 0;
         right.y = 0;
         forward.Normalize();
         right.Normalize();
@@ -46,11 +49,6 @@ public class MovementManager : MonoBehaviour
             moveDirection.Normalize();
 
         ctrl.Move(movementSpeed * Time.fixedDeltaTime * moveDirection);
-
-        //if (!ctrl.isGrounded)
-        //{
-        //    playerVelocity.y += playerGravity * Time.fixedDeltaTime;
-        //}
 
         playerVelocity.y += playerGravity * Time.fixedDeltaTime;
         ctrl.Move(playerVelocity * Time.fixedDeltaTime);
