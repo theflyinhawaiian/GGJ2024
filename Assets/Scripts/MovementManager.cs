@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using static UnityEditor.FilePathAttribute;
 
@@ -6,15 +7,40 @@ public class MovementManager : MonoBehaviour
     public float jumpForce;
     public float playerGravity;
     public float movementSpeed = 5.0f;
-    public Transform playerCamera; 
+    public float sprintSpeed = 10.0f; 
+    public float maxStepHeight;
+    public Transform playerCamera;
 
     private CharacterController ctrl;
     private Vector3 playerVelocity = Vector3.zero;
     private bool canJump = true;
 
+    public float Horizontal { get; private set; }
+    public float Vertical { get; private set; }
+    public float Speed { get; private set; }
+    public bool IsSprinting { get; private set; }
+    public delegate void JumpHandler(object sender, EventArgs e);
+    public event JumpHandler JumpEvent;
+
+    private bool jumpRequested = false;
+    private float jumpCooldown = 0.2f; 
+    private float lastJumpTime = -1f;
+
     void Start()
     {
         ctrl = GetComponent<CharacterController>();
+        //Enables the stepup mechanic but does not seem to actually change the value upon setting the float 
+        ctrl.stepOffset = maxStepHeight;
+    }
+
+    void Update() 
+    {
+        if (Input.GetButton("Jump") && Time.time > lastJumpTime + jumpCooldown)
+        {
+            jumpRequested = true;
+        }
+
+        IsSprinting = Input.GetKey(KeyCode.LeftShift);
     }
 
     void FixedUpdate()
@@ -25,10 +51,13 @@ public class MovementManager : MonoBehaviour
             canJump = true;
         }
 
-        if (canJump && Input.GetButton("Jump"))
+        if (canJump && jumpRequested)
         {
             playerVelocity.y = jumpForce;
             canJump = false;
+            jumpRequested = false; 
+            lastJumpTime = Time.time; 
+            JumpEvent?.Invoke(this, new EventArgs());
         }
 
         float x = Input.GetAxis("Horizontal");
@@ -36,7 +65,7 @@ public class MovementManager : MonoBehaviour
 
         Vector3 forward = playerCamera.forward;
         Vector3 right = playerCamera.right;
-        forward.y = 0; 
+        forward.y = 0;
         right.y = 0;
         forward.Normalize();
         right.Normalize();
@@ -46,14 +75,15 @@ public class MovementManager : MonoBehaviour
         if (moveDirection.magnitude > 1)
             moveDirection.Normalize();
 
-        ctrl.Move(movementSpeed * Time.fixedDeltaTime * moveDirection);
+        float currentSpeed = IsSprinting ? sprintSpeed : movementSpeed; // Choose speed based on sprinting state
 
-        //if (!ctrl.isGrounded)
-        //{
-        //    playerVelocity.y += playerGravity * Time.fixedDeltaTime;
-        //}
+        ctrl.Move(currentSpeed * Time.fixedDeltaTime * moveDirection);
 
-        playerVelocity.y += playerGravity * Time.fixedDeltaTime;
+        if (!ctrl.isGrounded)
+        {
+            playerVelocity.y += playerGravity * Time.fixedDeltaTime;
+        }
+
         ctrl.Move(playerVelocity * Time.fixedDeltaTime);
     }
 
